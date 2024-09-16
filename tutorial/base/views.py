@@ -15,6 +15,8 @@ from .forms import RoomForm
 #    {'id':3, 'name':'Frontend developer!'},
 #]
 
+
+
 def loginPage(request):
     page = 'login'
     if request.user.is_authenticated:
@@ -41,9 +43,13 @@ def loginPage(request):
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
 
+
+
 def logoutUser(request):
     logout(request)
     return redirect('home')
+
+
 
 def registerPage(request):
     page = 'register'
@@ -62,6 +68,8 @@ def registerPage(request):
 
     return render(request, 'base/login_register.html', {'form': form, 'page': page})
 
+
+
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') is not None else ''
 
@@ -77,6 +85,8 @@ def home(request):
 
     context = {'rooms': rooms, 'topics': topics, 'room_count': room_count, 'room_messages': room_messages}
     return render(request, 'base/home.html', context)
+
+
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
@@ -94,6 +104,18 @@ def room(request, pk):
     context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
 
+
+
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()  # Updated variable name
+    topics = Topic.objects.all()
+    context = {'user': user, 'rooms': rooms, 'room_messages': room_messages, 'topics': topics}  # Updated context key
+    return render(request, 'base/profile.html', context)
+
+
+
 @login_required(login_url='login')
 def createRoom(request):
     form = RoomForm()
@@ -106,6 +128,8 @@ def createRoom(request):
 
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
+
+
 
 @login_required(login_url='login')
 def updateRoom(request, pk):
@@ -124,6 +148,8 @@ def updateRoom(request, pk):
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
 
+
+
 @login_required(login_url='login')
 def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
@@ -135,6 +161,8 @@ def deleteRoom(request, pk):
         room.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj': room})
+
+
 
 @login_required(login_url='login')
 def deleteMessage(request, pk):
