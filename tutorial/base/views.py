@@ -10,7 +10,7 @@ from .models import Room, Topic, Message
 from .forms import RoomForm
 
 #rooms = [
-#    {'id':1, 'name':'Lets learn python!'},
+#    {'id':1, 'name':'Let's learn Python!'},
 #    {'id':2, 'name':'Design with me!'},
 #    {'id':3, 'name':'Frontend developer!'},
 #]
@@ -26,8 +26,9 @@ def loginPage(request):
 
         try:
             user = User.objects.get(username=username)
-        except:
+        except User.DoesNotExist:
             messages.error(request, 'User does not exist')
+            return render(request, 'base/login_register.html', {'page': page})
 
         user = authenticate(request, username=username, password=password)
 
@@ -35,7 +36,7 @@ def loginPage(request):
             login(request, user)
             return redirect('home')
         else:
-            message.error(request, 'username OR password does not exist')
+            messages.error(request, 'Username or password is incorrect')
 
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
@@ -57,23 +58,24 @@ def registerPage(request):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'An error occured during registration')
+            messages.error(request, 'An error occurred during registration')
 
-    return render(request, 'base/login_register.html', {'form': form})
+    return render(request, 'base/login_register.html', {'form': form, 'page': page})
 
 def home(request):
-    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    q = request.GET.get('q') if request.GET.get('q') is not None else ''
 
     rooms = Room.objects.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
         Q(description__icontains=q)
-        )
+    )
 
     topics = Topic.objects.all()
     room_count = rooms.count()
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
 
-    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count}
+    context = {'rooms': rooms, 'topics': topics, 'room_count': room_count, 'room_messages': room_messages}
     return render(request, 'base/home.html', context)
 
 def room(request, pk):
@@ -89,9 +91,8 @@ def room(request, pk):
         room.participants.add(request.user)
         return redirect('room', pk=room.id)
 
-    context = {'room' : room, 'room_messages': room_messages, 'participants': participants}
+    context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
-
 
 @login_required(login_url='login')
 def createRoom(request):
@@ -112,7 +113,7 @@ def updateRoom(request, pk):
     form = RoomForm(instance=room)
 
     if request.user != room.host:
-        return HttpResponse('Your are not allowed here')
+        return HttpResponse('You are not allowed here')
 
     if request.method == 'POST':
         form = RoomForm(request.POST, instance=room)
@@ -128,26 +129,21 @@ def deleteRoom(request, pk):
     room = Room.objects.get(id=pk)
 
     if request.user != room.host:
-        return HttpResponse('Your are not allowed here')
+        return HttpResponse('You are not allowed here')
 
     if request.method == 'POST':
         room.delete()
         return redirect('home')
-    return render(request, 'base/delete.html', {'obj':room})
-
+    return render(request, 'base/delete.html', {'obj': room})
 
 @login_required(login_url='login')
 def deleteMessage(request, pk):
     message = Message.objects.get(id=pk)
 
     if request.user != message.user:
-        return HttpResponse('Your are not allowed here')
+        return HttpResponse('You are not allowed here')
 
     if request.method == 'POST':
         message.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj': message})
-
-
-
-
