@@ -7,6 +7,7 @@
 
     <!-- Topics Start -->
     {% include 'base/topics_component.html' %}
+
     <!-- Topics End -->
 
     <!-- Room List Start -->
@@ -23,12 +24,16 @@
             <input name="q" placeholder="Search for posts" />
           </label>
         </form>
+        <div class="mobile-menuItems">
+          <a class="btn btn--main btn--pill" href="{% url 'topics' %}">Browse Topics</a>
+          <a class="btn btn--main btn--pill" href="{% url 'activity' %}">Recent Activities</a>
+        </div>
       </div>
 
       <div class="roomList__header">
         <div>
           <h2>Study Rooms</h2>
-          <p>{{ room_count }} Rooms available</p>
+          <p>{{room_count}} Rooms available</p>
         </div>
 
         <a class="btn btn--main" href="{% url 'create-room' %}">
@@ -49,8 +54,8 @@
 
     <!-- Activities Start -->
     {% include 'base/activity_component.html' %}
-    <!-- Activities End -->
 
+    <!-- Activities End -->
   </div>
 </main>
 
